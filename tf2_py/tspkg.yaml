@@ -1,0 +1,19 @@
+name: tf2_py
+version: 0.1.0
+maintainer: Yifan Gong  <yifan.gong@tusimple.ai>
+
+
+deps:
+  zoro: any
+  middleware: any
+
+
+build: |
+  [[ -n $CLEANUP ]] && rm -r build
+  mkdir -p build
+  cd build
+  cmake -DCMAKE_INSTALL_PREFIX=$INSTALL_DIR -DCMAKE_BUILD_TYPE=$CMAKE_BUILD_TYPE ..
+  make -j8
+  make install
+  cd ..
+ 

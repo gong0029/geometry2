@@ -1,0 +1,13 @@
+name: tf2_ros
+version: 0.1.0
+maintainer: Yifan Gong  <yifan.gong@tusimple.ai>
+
+
+deps:
+  zoro: any
+  middleware: any
+
+
+build: |
+  install_python 3 tf2_ros
+
