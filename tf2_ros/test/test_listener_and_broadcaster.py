@@ -95,7 +95,9 @@ class TestBroadcasterAndListener(unittest.TestCase):
         broadcasted_transform = self.broadcast_transform(
             target_frame='foo', source_frame='bar', time_stamp=time_stamp)
 
-        time.sleep(0.1)
+        fut = self.buffer.wait_for_transform_async(target_frame='foo', source_frame='bar', time=time_stamp)
+        while not fut.done():
+            pass
 
         listened_transform = self.buffer.lookup_transform(
             target_frame='foo', source_frame='bar', time=time_stamp)
@@ -123,7 +125,10 @@ class TestBroadcasterAndListener(unittest.TestCase):
         self.broadcast_transform(
             target_frame='foo', source_frame='bar',
             time_stamp=mw.time.Time(secs=0.2, nsecs=0).to_msg())
-        time.sleep(0.1)
+
+        fut = self.buffer.wait_for_transform_async(target_frame='foo', source_frame='bar', time=mw.time.Time(secs=0.2, nsecs=0).to_msg())
+        while not fut.done():
+            pass
 
         with self.assertRaises(ExtrapolationException) as e:
             self.buffer.lookup_transform(
@@ -145,7 +150,10 @@ class TestBroadcasterAndListener(unittest.TestCase):
         broadcasted_transform = self.broadcast_static_transform(
             target_frame='foo', source_frame='bar',
             time_stamp=mw.time.Time(secs=1.1, nsecs=0).to_msg())
-        time.sleep(0.1)
+
+        fut = self.buffer.wait_for_transform_async(target_frame='foo', source_frame='bar', time=mw.time.Time(secs=1.0, nsecs=0).to_msg())
+        while not fut.done():
+            pass
 
         listened_transform = self.buffer.lookup_transform(
             target_frame='foo', source_frame='bar',
