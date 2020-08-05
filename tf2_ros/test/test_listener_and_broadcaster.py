@@ -37,7 +37,7 @@ from tf2_ros.transform_broadcaster import TransformBroadcaster
 from tf2_ros.static_transform_broadcaster import StaticTransformBroadcaster
 from tf2_ros.transform_listener import TransformListener
 from tf2_ros import ExtrapolationException
-
+import time
 
 def build_transform(target_frame, source_frame, stamp):
     transform = TransformStamped()
@@ -59,21 +59,17 @@ def build_transform(target_frame, source_frame, stamp):
 class TestBroadcasterAndListener(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        rclpy.init()
-
         cls.buffer = Buffer()
-        cls.node = rclpy.create_node('test_broadcaster_listener')
+        #cls.node = rclpy.create_node('test_broadcaster_listener')
+        cls.node = mw.implementation.zoro.node_handler
         cls.broadcaster = TransformBroadcaster(cls.node)
         cls.static_broadcaster = StaticTransformBroadcaster(cls.node)
         cls.listener = TransformListener(
             buffer=cls.buffer, node=cls.node, spin_thread=False)
-
-        cls.executor = rclpy.executors.SingleThreadedExecutor()
-        cls.executor.add_node(cls.node)
-
+        mw.spin_async()
     @classmethod
     def tearDownClass(cls):
-        rclpy.shutdown()
+        pass
 
     def setUp(self):
         self.buffer = Buffer()
@@ -84,9 +80,6 @@ class TestBroadcasterAndListener(unittest.TestCase):
             target_frame=target_frame, source_frame=source_frame, stamp=time_stamp)
 
         self.broadcaster.sendTransform(broadcast_transform)
-
-        self.executor.spin_once()
-
         return broadcast_transform
 
     def broadcast_static_transform(self, target_frame, source_frame, time_stamp):
@@ -94,9 +87,6 @@ class TestBroadcasterAndListener(unittest.TestCase):
             target_frame=target_frame, source_frame=source_frame, stamp=time_stamp)
 
         self.static_broadcaster.sendTransform(broadcast_transform)
-
-        self.executor.spin_once()
-
         return broadcast_transform
 
     def test_broadcaster_and_listener(self):
@@ -104,6 +94,8 @@ class TestBroadcasterAndListener(unittest.TestCase):
 
         broadcasted_transform = self.broadcast_transform(
             target_frame='foo', source_frame='bar', time_stamp=time_stamp)
+
+        time.sleep(0.1)
 
         listened_transform = self.buffer.lookup_transform(
             target_frame='foo', source_frame='bar', time=time_stamp)
@@ -131,6 +123,7 @@ class TestBroadcasterAndListener(unittest.TestCase):
         self.broadcast_transform(
             target_frame='foo', source_frame='bar',
             time_stamp=mw.time.Time(secs=0.2, nsecs=0).to_msg())
+        time.sleep(0.1)
 
         with self.assertRaises(ExtrapolationException) as e:
             self.buffer.lookup_transform(
@@ -152,6 +145,7 @@ class TestBroadcasterAndListener(unittest.TestCase):
         broadcasted_transform = self.broadcast_static_transform(
             target_frame='foo', source_frame='bar',
             time_stamp=mw.time.Time(secs=1.1, nsecs=0).to_msg())
+        time.sleep(0.1)
 
         listened_transform = self.buffer.lookup_transform(
             target_frame='foo', source_frame='bar',
